@@ -1,14 +1,12 @@
 import { format, parseISO } from 'date-fns';
-import { supabaseAdmin } from './supabase';
+import { createServerSupabaseClient } from './supabase';
 import type { Article, Category } from './types';
-
-// Use admin client for data access
-const supabase = supabaseAdmin;
 
 // Data loading functions
 export async function getArticles(): Promise<Article[]> {
   try {
     // Try to read from Supabase database first
+    const supabase = createServerSupabaseClient();
     const { data: articles, error } = await supabase
       .from('articles')
       .select(`
@@ -49,6 +47,7 @@ export async function getArticles(): Promise<Article[]> {
 export async function getCategories(): Promise<Category[]> {
   try {
     // Try to read from Supabase database first
+    const supabase = createServerSupabaseClient();
     const { data: categories, error } = await supabase
       .from('categories')
       .select('*')
@@ -75,6 +74,7 @@ export async function getCategories(): Promise<Category[]> {
 
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
   try {
+    const supabase = createServerSupabaseClient();
     const { data: articles, error } = await supabase
       .from('articles')
       .select(`
@@ -110,6 +110,7 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
 export async function getArticlesByCategory(categorySlug: string): Promise<Article[]> {
   try {
     // First get the category ID
+    const supabase = createServerSupabaseClient();
     const { data: category, error: categoryError } = await supabase
       .from('categories')
       .select('id')
@@ -161,6 +162,7 @@ export async function getArticlesByCategory(categorySlug: string): Promise<Artic
 
 export async function getCategoryBySlug(slug: string): Promise<Category | null> {
   try {
+    const supabase = createServerSupabaseClient();
     const { data: category, error } = await supabase
       .from('categories')
       .select('*')

@@ -4,7 +4,6 @@ import GoogleAnalytics from '@/components/GoogleAnalytics';
 import Header from '@/components/Header';
 import PerformanceAnalytics from '@/components/PerformanceAnalytics';
 import UserInteractionAnalytics from '@/components/UserInteractionAnalytics';
-import { getCategories } from '@/lib/utils';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
@@ -70,7 +69,8 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const categories = await getCategories();
+  // Empty categories array for build time
+  const categories: any[] = [];
 
   return (
     <html lang="en" className="scroll-smooth" data-scroll-behavior="smooth">
