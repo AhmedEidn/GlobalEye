@@ -2,8 +2,8 @@ import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 import fs from 'fs/promises';
 import path from 'path';
-import type { HumanArticle } from './advanced-human-writer';
-import { generateAndSaveArticle } from './advanced-human-writer';
+import type { AIArticle } from './advanced-human-writer';
+import { generateOneArticle } from './advanced-human-writer';
 
 // Load environment variables from .env.local only
 dotenv.config({ path: '.env.local' });
@@ -121,7 +121,7 @@ function generateUniqueArticleId(): string {
 }
 
 // Save article to local JSON file
-async function saveArticleLocally(article: HumanArticle): Promise<void> {
+async function saveArticleLocally(article: AIArticle): Promise<void> {
   try {
     const dataDir = path.join(process.cwd(), 'src', 'data', article.category);
     
@@ -150,7 +150,7 @@ async function saveArticleLocally(article: HumanArticle): Promise<void> {
 }
 
 // Upload article to Supabase
-async function uploadArticleToSupabase(article: HumanArticle): Promise<boolean> {
+async function uploadArticleToSupabase(article: AIArticle): Promise<boolean> {
   try {
     console.log(`📤 Uploading article to Supabase: ${article.title}`);
     
@@ -159,23 +159,23 @@ async function uploadArticleToSupabase(article: HumanArticle): Promise<boolean> 
       id: generateUniqueArticleId(),
       title: article.title,
       slug: article.slug,
-      excerpt: article.excerpt,
-      content: article.content,
-      featured_image_url: article.image.url,
+      excerpt: article.summary.join(' '),
+      content: article.body,
+      featured_image_url: article.image?.url || '',
       status: 'published',
       author_id: '00000000-0000-0000-0000-000000000001', // Default writer ID
       category_id: await getCategoryId(article.category),
-      published_at: article.publishedDate,
-      reading_time: article.readingTime,
-      word_count: article.wordCount,
+      published_at: article.publishDate,
+      reading_time: Math.ceil(article.body.split(/\s+/).length / 200),
+      word_count: article.body.split(/\s+/).length,
       meta_title: article.title,
-      meta_description: article.excerpt,
+      meta_description: article.metaDescription,
       is_featured: false,
       is_pinned: false,
       allow_comments: true,
       seo_score: calculateSEOScore(article),
-      created_at: article.publishedDate,
-      updated_at: article.publishedDate
+      created_at: article.publishDate,
+      updated_at: article.publishDate
     };
     
     const { data, error } = await supabase
@@ -218,11 +218,12 @@ async function getCategoryId(categorySlug: string): Promise<string> {
 }
 
 // Calculate SEO score based on article quality
-function calculateSEOScore(article: HumanArticle): number {
+function calculateSEOScore(article: AIArticle): number {
   let score = 85; // Base score
   
   // Bonus for good word count
-  if (article.wordCount >= 1200 && article.wordCount <= 1500) {
+  const wordCount = article.body.split(/\s+/).length;
+  if (wordCount >= 1200 && wordCount <= 1500) {
     score += 5;
   }
   
@@ -231,18 +232,20 @@ function calculateSEOScore(article: HumanArticle): number {
     score += 3;
   }
   
-  // Bonus for good excerpt length
-  if (article.excerpt.length >= 120 && article.excerpt.length <= 160) {
+  // Bonus for good summary length
+  const summaryLength = article.summary.join(' ').length;
+  if (summaryLength >= 120 && summaryLength <= 160) {
     score += 2;
   }
   
   // Bonus for reading time
-  if (article.readingTime >= 6 && article.readingTime <= 8) {
+  const readingTime = Math.ceil(wordCount / 200);
+  if (readingTime >= 6 && readingTime <= 8) {
     score += 2;
   }
   
   // Bonus for image
-  if (article.image.url && article.image.url !== '') {
+  if (article.image?.url && article.image.url !== '') {
     score += 3;
   }
   
@@ -269,7 +272,12 @@ async function generateArticlesForCategory(category: string, count: number = 2):
       console.log(`\n📝 Generating article ${i + 1}/${count}: ${topic}`);
       
       // Generate article
-      const article = await generateAndSaveArticle(category, topic);
+      const article = await generateOneArticle(category);
+      
+      if (!article) {
+        console.log(`⚠️ Failed to generate article for ${category}`);
+        continue;
+      }
       
       // Save locally
       await saveArticleLocally(article);

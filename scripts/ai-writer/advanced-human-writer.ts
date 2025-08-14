@@ -38,7 +38,7 @@ const AUTHOR_NAMES = [
 ];
 
 // Article structure interface
-interface AIArticle {
+export interface AIArticle {
   id: string;
   title: string;
   slug: string;
