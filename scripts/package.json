@@ -1,0 +1,22 @@
+{
+  "name": "globaleye-upload-script",
+  "version": "1.0.0",
+  "description": "Script to upload articles and categories to Supabase",
+  "main": "upload-data.ts",
+  "scripts": {
+    "upload": "ts-node upload-data.ts",
+    "build": "tsc",
+    "start": "node dist/upload-data.js",
+    "install-deps": "pnpm install"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.3.0"
+  },
+  "packageManager": "pnpm@8.0.0"
+}
