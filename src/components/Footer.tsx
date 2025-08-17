@@ -1,11 +1,10 @@
-import type { Category } from '@/lib/types';
+'use client';
+
+import { useCategories } from './CategoriesProvider';
 import Link from 'next/link';
 
-interface FooterProps {
-  categories?: Category[];
-}
-
-export default function Footer({ categories = [] }: FooterProps) {
+export default function Footer() {
+  const { categories, loading } = useCategories();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -49,43 +48,49 @@ export default function Footer({ categories = [] }: FooterProps) {
                                {/* Categories */}
             <div>
              <h3 className="text-lg font-semibold mb-4 text-white">Categories</h3>
-             {(() => {
-               const third = Math.ceil(categories.length / 3);
-               const first = categories.slice(0, third);
-               const second = categories.slice(third, third * 2);
-               const third_col = categories.slice(third * 2);
-               return (
-                 <div className="grid grid-cols-3 gap-x-6 gap-y-2 md:gap-x-6 md:gap-y-2">
-                   <ul className="space-y-2">
-                     {first.map((category) => (
-                       <li key={category.id}>
-                         <Link href={`/category/${category.slug}`} className="text-gray-300 hover:text-white transition-colors">
-                           {category.name}
-                         </Link>
-                       </li>
-                     ))}
-                   </ul>
-                   <ul className="space-y-2">
-                     {second.map((category) => (
-                       <li key={category.id}>
-                         <Link href={`/category/${category.slug}`} className="text-gray-300 hover:text-white transition-colors">
-                           {category.name}
-                         </Link>
-                       </li>
-                     ))}
-                   </ul>
-                   <ul className="space-y-2">
-                     {third_col.map((category) => (
-                       <li key={category.id}>
-                         <Link href={`/category/${category.slug}`} className="text-gray-300 hover:text-white transition-colors">
-                           {category.name}
-                         </Link>
-                       </li>
-                     ))}
-                   </ul>
-                 </div>
-               );
-             })()}
+             {loading ? (
+               <div className="text-gray-400">Loading categories...</div>
+             ) : categories.length > 0 ? (
+               (() => {
+                 const third = Math.ceil(categories.length / 3);
+                 const first = categories.slice(0, third);
+                 const second = categories.slice(third, third * 2);
+                 const third_col = categories.slice(third * 2);
+                 return (
+                   <div className="grid grid-cols-3 gap-x-6 gap-y-2 md:gap-x-6 md:gap-y-2">
+                     <ul className="space-y-2">
+                       {first.map((category) => (
+                         <li key={category.id}>
+                           <Link href={`/category/${category.slug}`} className="text-gray-300 hover:text-white transition-colors">
+                             {category.name}
+                           </Link>
+                         </li>
+                       ))}
+                     </ul>
+                     <ul className="space-y-2">
+                       {second.map((category) => (
+                         <li key={category.id}>
+                           <Link href={`/category/${category.slug}`} className="text-gray-300 hover:text-white transition-colors">
+                             {category.name}
+                           </Link>
+                         </li>
+                       ))}
+                     </ul>
+                     <ul className="space-y-2">
+                       {third_col.map((category) => (
+                         <li key={category.id}>
+                           <Link href={`/category/${category.slug}`} className="text-gray-300 hover:text-white transition-colors">
+                             {category.name}
+                           </Link>
+                         </li>
+                       ))}
+                     </ul>
+                   </div>
+                 );
+               })()
+             ) : (
+               <div className="text-gray-400">No categories available</div>
+             )}
            </div>
 
                                {/* Quick Links */}

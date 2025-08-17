@@ -1,4 +1,5 @@
 import AuthProvider from '@/components/AuthProvider';
+import CategoriesProvider from '@/components/CategoriesProvider';
 import Footer from '@/components/Footer';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 import Header from '@/components/Header';
@@ -69,9 +70,6 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Empty categories array for build time
-  const categories: any[] = [];
-
   return (
     <html lang="en" className="scroll-smooth" data-scroll-behavior="smooth">
       <body className={`${inter.className} bg-gray-50 text-gray-900 antialiased`}>
@@ -81,13 +79,15 @@ export default async function RootLayout({
         <UserInteractionAnalytics />
         
         <AuthProvider>
-          <div className="min-h-screen flex flex-col">
-            <Header categories={categories} />
-            <main className="flex-1">
-              {children}
-            </main>
-            <Footer categories={categories} />
-          </div>
+          <CategoriesProvider>
+            <div className="min-h-screen flex flex-col">
+              <Header />
+              <main className="flex-1">
+                {children}
+              </main>
+              <Footer />
+            </div>
+          </CategoriesProvider>
         </AuthProvider>
       </body>
     </html>

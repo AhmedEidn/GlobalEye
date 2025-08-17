@@ -337,6 +337,10 @@ export interface CategoryWithCount extends Category {
   article_count: number;
 }
 
+export interface CategoryWithArticleCount extends Category {
+  article_count: number;
+}
+
 export interface UserStats {
   total_articles: number;
   total_likes: number;

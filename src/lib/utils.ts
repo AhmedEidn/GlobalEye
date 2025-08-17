@@ -46,28 +46,45 @@ export async function getArticles(): Promise<Article[]> {
 
 export async function getCategories(): Promise<Category[]> {
   try {
+    console.log('🔍 Fetching categories from database...');
+    console.log('🔍 Environment variables check:');
+    console.log('🔍 SUPABASE_URL:', process.env.SUPABASE_URL ? '✅ Set' : '❌ Missing');
+    console.log('🔍 SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? '✅ Set' : '❌ Missing');
+    
     // Try to read from Supabase database first
     const supabase = createServerSupabaseClient();
+    console.log('🔍 Supabase client created successfully');
+    
     const { data: categories, error } = await supabase
       .from('categories')
       .select('*')
       .eq('is_active', true)
-      .order('sort_order', { ascending: true });
+      .order('name', { ascending: true }); // Use name instead of sort_order
+
+    console.log('📊 Categories query completed');
+    console.log('📊 Categories result:', { categories, error });
+    console.log('📊 Categories count:', categories?.length || 0);
+    console.log('📊 Categories names:', categories?.map(c => c.name) || []);
+    console.log('📊 Categories data type:', typeof categories);
+    console.log('📊 Categories is array:', Array.isArray(categories));
 
     if (error) {
-      console.warn('Failed to read from Supabase:', error);
+      console.warn('❌ Failed to read from Supabase:', error);
       return [];
     }
 
     if (categories && categories.length > 0) {
+      console.log(`✅ Found ${categories.length} categories:`, categories.map(c => c.name));
+      console.log('✅ Returning categories array');
       return categories;
     }
 
     // Return empty array if database is empty (no fallback to static files)
-    console.log('No categories found in database');
+    console.log('⚠️ No categories found in database');
+    console.log('⚠️ Returning empty array');
     return [];
   } catch (error) {
-    console.warn('Failed to read from Supabase:', error);
+    console.warn('❌ Exception in getCategories:', error);
     return [];
   }
 }

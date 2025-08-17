@@ -2,6 +2,7 @@ import ArticleCard from '@/components/ArticleCard';
 import Pagination from '@/components/Pagination';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { getArticlesByCategory, getCategoryBySlug } from '@/lib/utils';
 
 interface CategoryPageProps {
   params: Promise<{
@@ -15,11 +16,15 @@ interface CategoryPageProps {
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const { slug } = await params;
   
-  // Mock category for build time
-  const category = {
-    name: 'Category',
-    description: 'Category description',
-  };
+  // Get category from database
+  const category = await getCategoryBySlug(slug);
+  
+  if (!category) {
+    return {
+      title: 'Category Not Found - GlobalEye News',
+      description: 'The requested category could not be found.',
+    };
+  }
   
   return {
     title: `${category.name} - GlobalEye News`,
@@ -35,19 +40,19 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   const { slug } = await params;
   const { page } = await searchParams;
   
-  // Mock category and articles for build time
-  const category = {
-    name: 'Category',
-    description: 'Category description',
-    slug: slug,
-  };
+  console.log('📁 CategoryPage - Loading category:', slug);
+  
+  // Get category and articles from database
+  const category = await getCategoryBySlug(slug);
+  const articles = await getArticlesByCategory(slug);
+  
+  console.log('📁 CategoryPage - Category:', category);
+  console.log('📁 CategoryPage - Articles count:', articles.length);
   
   if (!category) {
     notFound();
   }
 
-  // Empty articles array for build time
-  const articles: any[] = [];
   const currentPage = parseInt(page || '1');
   const itemsPerPage = 9;
   const totalPages = Math.ceil(articles.length / itemsPerPage);
