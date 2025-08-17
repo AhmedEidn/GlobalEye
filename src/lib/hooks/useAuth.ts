@@ -7,7 +7,7 @@ export function useAuth() {
 
   const login = async (provider: string = 'google') => {
     try {
-      await signIn(provider, { callbackUrl: '/' });
+      await signIn(provider, { callbackUrl: '/profile' });
     } catch (error) {
       console.error('Login error:', error);
     }

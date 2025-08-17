@@ -1,12 +1,35 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'User Profile - GlobalEye',
-  description: 'Manage your profile and access your favorites',
-};
+import { useAuth } from '@/lib/hooks/useAuth';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function ProfilePage() {
+  const { user, isLoggedIn, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && !isLoggedIn) {
+      router.push('/login');
+    }
+  }, [isLoading, isLoggedIn, router]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-xl">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isLoggedIn) {
+    return null; // Will redirect to login
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -57,23 +80,38 @@ export default function ProfilePage() {
           {/* Main Content */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">Welcome to Your Profile</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-6">Welcome, {user?.name || 'User'}!</h2>
               
               <div className="space-y-6">
                 <div className="border border-gray-200 rounded-lg p-6">
                   <h3 className="text-lg font-medium text-gray-900 mb-3">Profile Information</h3>
-                  <p className="text-gray-600 mb-4">
-                    This is your personal dashboard where you can manage your account and access your saved content.
-                  </p>
                   <div className="flex items-center space-x-4">
                     <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-                      <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
+                      {user?.image ? (
+                        <img 
+                          src={user.image} 
+                          alt={user.name || 'User'} 
+                          className="w-16 h-16 rounded-full object-cover"
+                        />
+                      ) : (
+                        <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      )}
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-500">User ID</p>
-                      <p className="font-medium text-gray-900">user_12345</p>
+                    <div className="space-y-2">
+                      <div>
+                        <p className="text-sm text-gray-500">Name</p>
+                        <p className="font-medium text-gray-900">{user?.name || 'Not provided'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Email</p>
+                        <p className="font-medium text-gray-900">{user?.email || 'Not provided'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Account Type</p>
+                        <p className="font-medium text-gray-900">Google OAuth</p>
+                      </div>
                     </div>
                   </div>
                 </div>
