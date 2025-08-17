@@ -3,31 +3,61 @@
 import { useAuth } from '@/lib/hooks/useAuth';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function ProfilePage() {
   const { user, isLoggedIn, isLoading } = useAuth();
   const router = useRouter();
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   useEffect(() => {
+    // Add debugging
+    console.log('Profile Page - Auth State:', { user, isLoggedIn, isLoading });
+    
     if (!isLoading && !isLoggedIn) {
+      console.log('Profile Page - Redirecting to login');
+      setIsRedirecting(true);
       router.push('/login');
     }
   }, [isLoading, isLoggedIn, router]);
 
-  if (isLoading) {
+  // Show loading while checking auth or redirecting
+  if (isLoading || isRedirecting) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-xl">Loading...</p>
+          <p className="mt-4 text-xl">
+            {isLoading ? 'Loading...' : 'Redirecting to login...'}
+          </p>
         </div>
       </div>
     );
   }
 
+  // If not logged in, show a message (should redirect above)
   if (!isLoggedIn) {
-    return null; // Will redirect to login
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
+            <p>You need to be logged in to view this page.</p>
+            <p>Redirecting to login...</p>
+          </div>
+          <Link 
+            href="/login"
+            className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Go to Login
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Debug info in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Profile Page - Rendering with user:', user);
   }
 
   return (
@@ -147,6 +177,19 @@ export default function ProfilePage() {
                     </Link>
                   </div>
                 </div>
+
+                {/* Debug Info in Development */}
+                {process.env.NODE_ENV === 'development' && (
+                  <div className="border border-gray-200 rounded-lg p-6 bg-gray-50">
+                    <h3 className="text-lg font-medium text-gray-900 mb-3">Debug Information</h3>
+                    <div className="space-y-2 text-sm">
+                      <p><strong>User ID:</strong> {user?.id || 'Not available'}</p>
+                      <p><strong>Session Status:</strong> {isLoggedIn ? 'Logged In' : 'Not Logged In'}</p>
+                      <p><strong>Loading State:</strong> {isLoading ? 'Loading' : 'Loaded'}</p>
+                      <p><strong>User Data:</strong> {JSON.stringify(user, null, 2)}</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
